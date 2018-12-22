@@ -75,30 +75,19 @@ impl FromStr for Command {
   }
 }
 
-/// Invoke the given parser on the given arguments and handles the result.
-///
-/// This macro invokes the given argument parser on the given arguments
-/// using the standard output and error.  It then handles three cases:
-/// If the result is `Ok`, it does nothing as the arguments have been
-/// parsed successfully.  If the result is `Err(0)`, it returns `Ok(())`
-/// as the help message has been printed by `argparse`.  Otherwise it
-/// returns `Err(Error::ArgparseError)` as `argparse` failed.
-macro_rules! parse_args {
-  ( $p:expr, $a:expr ) => {
-    if let Err(err) = $p.parse($a, &mut io::stdout(), &mut io::stderr()) {
-      match err {
-        0 => return Ok(()),
-        _ => return Err(Error::ArgparseError),
-      }
-    }
-  };
+fn parse(parser: &argparse::ArgumentParser<'_>, args: Vec<String>) -> Result<()> {
+  if let Err(err) = parser.parse(args, &mut io::stdout(), &mut io::stderr()) {
+    Err(Error::ArgparseError(err))
+  } else {
+    Ok(())
+  }
 }
 
 /// Inquire the status of the nitrokey.
 fn status(args: Vec<String>) -> Result<()> {
   let mut parser = argparse::ArgumentParser::new();
   parser.set_description("Print the status of the connected Nitrokey Storage");
-  parse_args!(parser, args);
+  parse(&parser, args)?;
 
   commands::status()
 }
@@ -107,7 +96,7 @@ fn status(args: Vec<String>) -> Result<()> {
 fn open(args: Vec<String>) -> Result<()> {
   let mut parser = argparse::ArgumentParser::new();
   parser.set_description("Opens the encrypted volume on a Nitrokey Storage");
-  parse_args!(parser, args);
+  parse(&parser, args)?;
 
   commands::open()
 }
@@ -116,7 +105,7 @@ fn open(args: Vec<String>) -> Result<()> {
 fn close(args: Vec<String>) -> Result<()> {
   let mut parser = argparse::ArgumentParser::new();
   parser.set_description("Closes the encrypted volume on a Nitrokey Storage");
-  parse_args!(parser, args);
+  parse(&parser, args)?;
 
   commands::close()
 }
@@ -125,7 +114,7 @@ fn close(args: Vec<String>) -> Result<()> {
 fn clear(args: Vec<String>) -> Result<()> {
   let mut parser = argparse::ArgumentParser::new();
   parser.set_description("Clears the cached passphrase");
-  parse_args!(parser, args);
+  parse(&parser, args)?;
 
   commands::clear()
 }

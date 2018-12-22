@@ -87,10 +87,19 @@ fn run() -> i32 {
     Err(err) => {
       match err {
         // argparse already printed the error message
-        Error::ArgparseError => {}
-        _ => println!("{}", err),
+        Error::ArgparseError(err) => {
+          if err == 0 {
+            0
+          } else {
+            // argparse already printed the error message
+            1
+          }
+        }
+        _ => {
+          println!("{}", err);
+          1
+        }
       }
-      1
     }
   }
 }
